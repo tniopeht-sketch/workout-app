@@ -10,8 +10,79 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;800&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><text x='50%' y='50%' font-size='90' text-anchor='middle' dy='.3em'>💪</text></svg>">
+    <link rel="icon" id="dynamicFavicon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><text x='50%' y='50%' font-size='90' text-anchor='middle' dy='.3em'>💪</text></svg>">
+    <link rel="apple-touch-icon" id="appleTouchIcon" href="">
     <title>ЖирOFFка</title>
+    <script>
+    // Generate app icon via canvas and set as apple-touch-icon
+    (function() {
+        var c = document.createElement('canvas');
+        c.width = c.height = 180;
+        var ctx = c.getContext('2d');
+
+        // Rounded rect clip
+        var r = 38;
+        ctx.beginPath();
+        ctx.moveTo(r, 0); ctx.lineTo(180-r, 0);
+        ctx.quadraticCurveTo(180, 0, 180, r);
+        ctx.lineTo(180, 180-r);
+        ctx.quadraticCurveTo(180, 180, 180-r, 180);
+        ctx.lineTo(r, 180);
+        ctx.quadraticCurveTo(0, 180, 0, 180-r);
+        ctx.lineTo(0, r);
+        ctx.quadraticCurveTo(0, 0, r, 0);
+        ctx.closePath();
+        ctx.clip();
+
+        // Background gradient
+        var bg = ctx.createLinearGradient(0, 0, 180, 180);
+        bg.addColorStop(0, '#1a0535');
+        bg.addColorStop(0.5, '#2d0a5e');
+        bg.addColorStop(1, '#0f0524');
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, 180, 180);
+
+        // Pink glow top-left
+        var g1 = ctx.createRadialGradient(30, 30, 0, 30, 30, 90);
+        g1.addColorStop(0, 'rgba(255,31,113,0.55)');
+        g1.addColorStop(1, 'rgba(255,31,113,0)');
+        ctx.fillStyle = g1; ctx.fillRect(0, 0, 180, 180);
+
+        // Purple glow bottom-right
+        var g2 = ctx.createRadialGradient(150, 150, 0, 150, 150, 90);
+        g2.addColorStop(0, 'rgba(112,0,255,0.5)');
+        g2.addColorStop(1, 'rgba(112,0,255,0)');
+        ctx.fillStyle = g2; ctx.fillRect(0, 0, 180, 180);
+
+        // Yellow glow top-right
+        var g3 = ctx.createRadialGradient(155, 25, 0, 155, 25, 70);
+        g3.addColorStop(0, 'rgba(255,204,0,0.35)');
+        g3.addColorStop(1, 'rgba(255,204,0,0)');
+        ctx.fillStyle = g3; ctx.fillRect(0, 0, 180, 180);
+
+        // "ЖО" text — Ж in white, OFF in yellow
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        // Shadow glow
+        ctx.shadowColor = 'rgba(255,31,113,0.8)';
+        ctx.shadowBlur = 18;
+
+        ctx.font = 'bold 68px Arial, sans-serif';
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText('Жир', 90, 72);
+
+        ctx.shadowColor = 'rgba(255,204,0,0.9)';
+        ctx.shadowBlur = 16;
+        ctx.fillStyle = '#ffcc00';
+        ctx.font = 'bold 52px Arial, sans-serif';
+        ctx.fillText('OFFка', 90, 128);
+
+        var dataUrl = c.toDataURL('image/png');
+        document.getElementById('appleTouchIcon').href = dataUrl;
+        document.getElementById('dynamicFavicon').href = dataUrl;
+    })();
+    </script>
     <style>
         * {
             margin: 0;
