@@ -29,6 +29,10 @@
             --glass-border: rgba(255, 255, 255, 0.5);
             --text-primary: #ffffff;
             --text-secondary: rgba(255, 255, 255, 0.8);
+            /* мягкий зелёный для прогресса/выполненного */
+            --green-main: #4caf7a;
+            --green-bg: rgba(76, 175, 122, 0.22);
+            --green-border: rgba(76, 175, 122, 0.75);
         }
 
         body, html {
@@ -150,6 +154,13 @@
 
         .profile-upload:active {
             transform: scale(0.95);
+        }
+
+        .profile-upload.dimmed {
+            background: rgba(255, 31, 113, 0.45);
+            opacity: 0.65;
+            box-shadow: none;
+            border: 1.5px solid rgba(255, 255, 255, 0.15);
         }
 
         #profileInput {
@@ -446,7 +457,7 @@
         .progress-bar {
             height: 100%;
             width: 0%;
-            background: linear-gradient(90deg, #ff1f71, #ffcc00, #7000ff);
+            background: linear-gradient(90deg, rgba(76, 175, 122, 0.95) 0%, rgba(76, 175, 122, 0.35) 100%);
             transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
@@ -495,8 +506,8 @@
         }
 
         .warmup-block.completed {
-            background: rgba(52, 199, 89, 0.2);
-            border: 1.5px solid rgba(52, 199, 89, 0.5);
+            background: var(--green-bg);
+            border: 1.5px solid var(--green-border);
         }
 
         .warmup-title {
@@ -532,9 +543,15 @@
         .workout-content h1 {
             font-size: 24px;
             font-weight: 800;
-            margin: 20px 0 15px 0;
+            margin: 20px auto 15px;
             color: #ffcc00;
             letter-spacing: 1px;
+            text-align: center;
+            padding: 12px 16px;
+            border-radius: 22px;
+            border: 1.5px solid rgba(255, 204, 0, 0.25);
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(20px);
         }
 
         .muscle-group {
@@ -568,8 +585,8 @@
         }
 
         .exercise-card.completed {
-            background: rgba(52, 199, 89, 0.15);
-            border: 1.5px solid rgba(52, 199, 89, 0.5);
+            background: rgba(76, 175, 122, 0.18);
+            border: 1.5px solid var(--green-border);
         }
 
         .header {
@@ -704,8 +721,8 @@
         }
 
         .cardio-block.completed {
-            background: rgba(52, 199, 89, 0.15);
-            border: 1.5px solid rgba(52, 199, 89, 0.5);
+            background: var(--green-bg);
+            border: 1.5px solid var(--green-border);
         }
 
         .reset-container {
@@ -821,9 +838,10 @@
         }
 
         .day.completed {
-            background: linear-gradient(135deg, #34c759, #00ff88);
+            background: rgba(76, 175, 122, 0.22);
             color: white;
-            border-color: rgba(52, 199, 89, 0.8);
+            border-color: var(--green-border);
+            box-shadow: 0 0 22px rgba(76, 175, 122, 0.35);
         }
 
         .day.today {
@@ -957,10 +975,11 @@
             width: 100%;
             background: rgba(255, 255, 255, 0.08);
             display: flex;
-            justify-content: space-around;
+            justify-content: space-between;
+            gap: 8px;
             border-top: 1px solid rgba(255, 255, 255, 0.15);
             z-index: 800;
-            padding: 8px 0 20px 0;
+            padding: 8px 12px 20px 12px;
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
         }
@@ -970,10 +989,14 @@
             flex-direction: column;
             align-items: center;
             gap: 4px;
-            padding: 8px 12px;
+            padding: 8px 8px;
             cursor: pointer;
-            border: none;
-            background: none;
+            border: 1.5px solid rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 18px;
+            flex: 1;
+            min-width: 0;
+            height: 64px;
             font-size: 24px;
             color: rgba(255, 255, 255, 0.6);
             transition: all 0.3s;
@@ -981,6 +1004,8 @@
 
         .nav-item.active {
             color: #ffcc00;
+            border-color: rgba(255, 204, 0, 0.55);
+            background: rgba(255, 255, 255, 0.1);
         }
 
         .nav-label {
@@ -1382,7 +1407,7 @@
 
 <div class="celebration-overlay" id="celebrationOverlay">
     <canvas id="fireworksCanvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;"></canvas>
-    <div class="celebration-text">🎉 ЛЕРА, ТЫ ЭТО СДЕЛАЛА! 🎉</div>
+    <div class="celebration-text" id="celebrationText">🎉 ЛЕРА, ТЫ ЭТО СДЕЛАЛА! 🎉</div>
 </div>
 
 <div class="cal-popup-overlay" id="calPopupOverlay">
@@ -1567,6 +1592,7 @@
     let currentMonth = new Date().getMonth();
     let currentYear = new Date().getFullYear();
     let modalOpen = false;
+    let achievementAutoCloseTimer = null;
 
     function init() {
         updateUI();
@@ -1610,7 +1636,7 @@
             reader.onload = function(e) {
                 const profileBox = document.getElementById('profileBox');
                 profileBox.innerHTML = `<img src="${e.target.result}" alt="Profile">
-                    <button class="profile-upload" onclick="removeProfile()" title="Удалить фото">✕</button>`;
+                    <button class="profile-upload dimmed" onclick="removeProfile()" title="Удалить фото">✕</button>`;
                 localStorage.setItem('profileImage', e.target.result);
             };
             reader.readAsDataURL(file);
@@ -1798,10 +1824,10 @@
             const btn = document.getElementById(`b${d}`);
             const pct = getDayProgress(d);
             if (pct === 100) {
-                btn.style.background = 'linear-gradient(135deg, #34c759, #00ff88)';
+                btn.style.background = 'linear-gradient(135deg, rgba(76, 175, 122, 0.95) 0%, rgba(76, 175, 122, 0.25) 100%)';
                 btn.style.color = 'white';
-                btn.style.boxShadow = '0 0 20px rgba(52, 199, 89, 0.5)';
-                btn.style.borderColor = 'rgba(52, 199, 89, 0.8)';
+                btn.style.boxShadow = '0 0 20px rgba(76, 175, 122, 0.35)';
+                btn.style.borderColor = 'rgba(76, 175, 122, 0.75)';
             } else {
                 if (d === currentDay) {
                     btn.style.background = 'linear-gradient(135deg, #ff1f71, #ffcc00)';
@@ -2169,8 +2195,7 @@
             if (count >= target && !checkedAchievements.includes(target)) {
                 // Только показываем модал если это точно новая награда (count === target)
                 if (count === target) {
-                    showUnlockNotification(target);
-                    openAchievementModal(target);
+                    triggerAchievement(target);
                 }
                 checkedAchievements.push(target);
                 localStorage.setItem('checkedAchievements', JSON.stringify(checkedAchievements));
@@ -2181,17 +2206,34 @@
 
     function showUnlockNotification(target) {
         const notification = document.getElementById('unlockNotification');
-        document.getElementById('notificationIcon').innerText = '🏆';
-        document.getElementById('notificationText').innerText = 'Награда разблокирована!';
-        document.getElementById('notificationSubtext').innerText = target + ' тренировок';
+        const icon = document.getElementById('notificationIcon');
+        const text = document.getElementById('notificationText');
+        const subtext = document.getElementById('notificationSubtext');
+        if (!notification || !icon || !text || !subtext) return;
+        icon.innerText = '🏆';
+        text.innerText = 'Награда разблокирована!';
+        subtext.innerText = target + ' тренировок';
         // notification.classList.remove('hide');
         // setTimeout(() => notification.classList.add('hide'), 3000);
     }
 
-    function showCelebration() {
+    // ТЗ: в момент достижения рубежа показываем карточку награды по центру на 4 сек
+    // и на фоне запускаем фейерверк.
+    function triggerAchievement(target) {
+        if (achievementAutoCloseTimer) clearTimeout(achievementAutoCloseTimer);
+        showCelebration('Награда разблокирована!', 4000);
+        openAchievementModal(target);
+        achievementAutoCloseTimer = setTimeout(() => {
+            closeAchievementModal();
+        }, 4000);
+    }
+
+    function showCelebration(message = '🎉 ЛЕРА, ТЫ ЭТО СДЕЛАЛА! 🎉', durationMs = 3000) {
         const overlay = document.getElementById('celebrationOverlay');
         const canvas = document.getElementById('fireworksCanvas');
         overlay.classList.add('show');
+        const textEl = document.getElementById('celebrationText') || document.querySelector('.celebration-text');
+        if (textEl) textEl.innerText = message;
 
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
@@ -2260,14 +2302,14 @@
             overlay.classList.remove('show');
             cancelAnimationFrame(animId);
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }, 3000);
+        }, durationMs);
     }
 
     window.addEventListener('load', () => {
         const profileImage = localStorage.getItem('profileImage');
         if (profileImage) {
             document.getElementById('profileBox').innerHTML = `<img src="${profileImage}" alt="Profile">
-                <button class="profile-upload" onclick="removeProfile()" title="Удалить фото">✕</button>`;
+                <button class="profile-upload dimmed" onclick="removeProfile()" title="Удалить фото">✕</button>`;
         }
         init();
     });
